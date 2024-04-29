@@ -1,0 +1,61 @@
+/* Reset some default styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Style for the chat container */
+.chat-container {
+    width: 300px;
+    margin: 20px auto;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+/* Style for chat messages */
+.chat-messages {
+    padding: 10px;
+    height: 200px;
+    overflow-y: auto;
+}
+
+/* Style for individual chat messages */
+.message {
+    margin-bottom: 10px;
+}
+
+/* Style for message username */
+.username {
+    font-weight: bold;
+}
+
+/* Style for chat input */
+.chat-input {
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-top: 1px solid #ccc;
+}
+
+.chat-input input[type="text"] {
+    width: 80%;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+.chat-input button {
+    width: 18%;
+    padding: 5px;
+    margin-left: 5px;
+    border: none;
+    border-radius: 3px;
+    background-color: #007bff;
+    color: #fff;
+    cursor: pointer;
+}
+
+.chat-input button:hover {
+    background-color: #0056b3;
+}

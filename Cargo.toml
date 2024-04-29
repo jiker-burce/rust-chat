@@ -1,0 +1,22 @@
+[package]
+name = "tokio_chat"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tokio = { version = "1.0.0",  features = ["full", "tracing"] }
+tokio-util = { version = "0.7.0",  features = ["full"] }
+tokio-stream = { version = "0.1"}
+dioxus = { version = "0.4.0" }
+dioxus-desktop = { version = "0.4.0" }
+dioxus-signals = { version = "0.4.3"}
+
+[lib]
+name = "client_lib"
+path = "src/libs/client_lib.rs"
+
+[[bin]]
+name = "client"
+path = "src/bin/client.rs"
