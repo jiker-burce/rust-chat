@@ -1,5 +1,4 @@
 #![allow(non_snake_case)]
-
 use dioxus::prelude::*;
 use dioxus::html::{div, form, input, span};
 use dioxus_desktop::{Config, WindowBuilder};
@@ -28,7 +27,7 @@ fn MessageEntry(cx: Scope, list: Vec<Message>) -> Element {
                     class: "message",
                     span {
                             class: "username",
-                            "{item.user}"
+                            "{item.user}: "
                         },
                     span {
                             class: "text",
