@@ -31,8 +31,11 @@ fn main() {
     // 启动方法参考：https://github.com/DioxusLabs/dioxus/blob/main/examples/file_explorer.rs
     // 参数使用tao原生类型；dioxus 的桌面渲染基本采用tao的引擎了： https://dioxuslabs.com/learn/0.5/reference/desktop
     LaunchBuilder::desktop()
-        .with_cfg(Config::new().with_window(WindowBuilder::new().with_resizable(false).with_inner_size(
-            tao::dpi::LogicalSize::new(340.0, 450.0)
-        )))
-        .launch(client_lib::Client);
+        .with_cfg(Config::new().with_window(
+            WindowBuilder::new().with_resizable(false).with_inner_size(
+                tao::dpi::LogicalSize::new(340.0, 450.0)
+            ).with_title(win_title)
+        )
+    )
+    .launch(client_lib::Client);
 }
