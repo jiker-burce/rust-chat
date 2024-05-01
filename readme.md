@@ -18,3 +18,6 @@
     - 可发送文件夹
 - DONE
   - 初步框架搭建，可正常渲染客户端桌面程序
+
+## 参考
+- [example-projects](https://github.com/DioxusLabs/example-projects)

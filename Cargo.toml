@@ -9,11 +9,11 @@ edition = "2021"
 tokio = { version = "1.0.0",  features = ["full", "tracing"] }
 tokio-util = { version = "0.7.0",  features = ["full"] }
 tokio-stream = { version = "0.1"}
-dioxus = { version = "0.4.0" }
-dioxus-desktop = { version = "0.4.0" }
-dioxus-signals = { version = "0.4.3"}
+dioxus = { version = "0.5.1", features = ["desktop"] }
+dioxus-desktop = { version = "0.5.0" }
+dioxus-signals = { version = "0.5.0"}
 lazy_static = "1.4.0"
-dioxus-hot-reload = { version = "0.4.3", features = ["file_watcher", "dioxus-html"] }
+dioxus-hot-reload = { version = "0.5.0", features = ["file_watcher", "dioxus-html"] }
 
 [lib]
 name = "client_lib"

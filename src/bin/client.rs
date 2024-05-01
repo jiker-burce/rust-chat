@@ -3,7 +3,7 @@ extern crate client_lib;
 use dioxus_desktop::{Config, WindowBuilder};
 use client_lib::USERNAME;
 
-use dioxus::prelude::hot_reload_init;
+use dioxus::prelude::*;
 
 
 // 聊天客户端
@@ -22,10 +22,10 @@ fn main() {
 
     let win_title = format!("{}的聊天窗口!", username);
 
-    dioxus_desktop::launch_cfg(
+    launch_desktop(
         client_lib::Client,
-        Config::default().with_window(WindowBuilder::new().with_resizable(false).with_inner_size(
-            dioxus_desktop::wry::application::dpi::LogicalSize::new(440.0, 450.0),
-        ).with_title(win_title)),
     );
+    // Config::default().with_window(WindowBuilder::new().with_resizable(false).with_inner_size(
+    //     dioxus_desktop::wry::application::dpi::LogicalSize::new(440.0, 450.0),
+    // ).with_title(win_title)),
 }
