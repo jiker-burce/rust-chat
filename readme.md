@@ -1,4 +1,6 @@
 ## 桌面聊天软件
+- 效果图
+  - <img src="client.png" alt="drawing" style="width:200px;height: 300px"/>
 - TODO
   - STEP1
     - 单个客户端窗口实现点击发送按钮发送消息，当前聊天窗口展示多个用户发送的信息

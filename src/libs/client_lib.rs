@@ -6,7 +6,6 @@ pub static mut USERNAME: String = String::new();
 
 #[derive(PartialEq, Clone)]
 struct Message {
-    id: usize,
     user: String,
     message: String
 }
@@ -39,12 +38,17 @@ pub fn Client() -> Element {
 
     let mut msg_field = use_signal(String::new);
 
-    // 状态
-    let mut messages: Signal<Vec<Message>> = use_signal(Vec::new);
-    // messages.write().push(Message{id: 0, user: current_user.clone(), message: "hello1".to_string()});
-    // messages.write().push(Message{id: 1,user: current_user.clone(), message: "hello2".to_string()});
-
-    let mut next_id = use_signal(|| 0);
+    // 可以通过闭包内部初始化数据；
+    // 但是使用 下面的方式会导致程序崩溃
+    // let mut messages: Signal<Vec<Message>> = use_signal(Vec::new);
+    //     // messages.write().push(Message{id: 0, user: current_user.clone(), message: "hello1".to_string()});
+    //     // messages.write().push(Message{id: 1,user: current_user.clone(), message: "hello2".to_string()});
+    let mut messages: Signal<Vec<Message>> = use_signal(|| {
+        vec![
+            Message{user: current_user.clone(), message: "hello1".to_string()},
+            Message{user: current_user.clone(), message: "hello2".to_string()},
+        ]
+    });
 
     rsx! {
         div {
@@ -58,9 +62,7 @@ pub fn Client() -> Element {
 
                     messages
                         .write()
-                        .push(Message {id: next_id(), user: current_user, message: msg_field()});
-
-                    next_id += 1;
+                        .push(Message {user: current_user, message: msg_field()});
 
                     msg_field.set(String::new());
                 },
