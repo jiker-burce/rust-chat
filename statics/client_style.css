@@ -9,7 +9,7 @@
 .chat-container {
     width: 300px;
     margin: 20px auto;
-    border: 1px solid #ccc;
+    border: 2px solid #ccc;
     border-radius: 5px;
     overflow: hidden;
 }

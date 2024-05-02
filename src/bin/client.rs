@@ -28,13 +28,16 @@ fn main() {
     //     client_lib::Client,
     // );
 
-    // 启动方法参考：https://github.com/DioxusLabs/dioxus/blob/main/examples/file_explorer.rs
+    // 启动方法参考(注意参考源码时，一定要找Cargo.toml里面引用的dioxus是0.5.0的，也就是和当前Cargo.toml中的版本保持一致，否则很有可能导致代码无法编译通过，
+    //  因为0.4.0 的代码风格，渲染宏函数和0.5.0完全不一样了。)：
+    // https://github.com/DioxusLabs/dioxus/blob/main/examples/file_explorer.rs
     // 参数使用tao原生类型；dioxus 的桌面渲染基本采用tao的引擎了： https://dioxuslabs.com/learn/0.5/reference/desktop
-    LaunchBuilder::desktop()
-        .with_cfg(Config::new().with_window(
-            WindowBuilder::new().with_resizable(false).with_inner_size(
-                tao::dpi::LogicalSize::new(340.0, 450.0)
-            ).with_title(win_title)
+    LaunchBuilder::desktop().with_cfg(
+        Config::new().with_window(
+            WindowBuilder::new()
+                .with_resizable(false)
+                .with_inner_size(tao::dpi::LogicalSize::new(340.0, 450.0))
+                .with_title(win_title)
         )
     )
     .launch(client_lib::Client);

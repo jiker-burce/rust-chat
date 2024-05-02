@@ -14,6 +14,8 @@ dioxus-desktop = { version = "0.5.0" }
 dioxus-signals = { version = "0.5.0"}
 lazy_static = "1.4.0"
 dioxus-hot-reload = { version = "0.5.0", features = ["file_watcher", "dioxus-html"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3.1", default-features = false, features = ["fmt", "ansi", "env-filter", "tracing-log"] }
 
 [lib]
 name = "client_lib"

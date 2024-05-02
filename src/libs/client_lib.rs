@@ -1,6 +1,9 @@
 #![allow(non_snake_case)]
 
+use dioxus::html::time;
 use dioxus::prelude::*;
+use tokio::time::{sleep, Duration};
+use std::cell::RefCell;
 
 pub static mut USERNAME: String = String::new();
 
@@ -30,6 +33,10 @@ fn MessageEntry(msg: Message) -> Element {
     }
 }
 
+thread_local! {
+    static VEC_SIGNAL: RefCell<Option<Signal<Vec<Message>, SyncStorage>>> = const { RefCell::new(None) };
+}
+
 // 聊天客户端窗口
 pub fn Client() -> Element {
     let current_user = unsafe{
@@ -43,11 +50,22 @@ pub fn Client() -> Element {
     // let mut messages: Signal<Vec<Message>> = use_signal(Vec::new);
     //     // messages.write().push(Message{id: 0, user: current_user.clone(), message: "hello1".to_string()});
     //     // messages.write().push(Message{id: 1,user: current_user.clone(), message: "hello2".to_string()});
-    let mut messages: Signal<Vec<Message>> = use_signal(|| {
+    let mut messages = use_signal_sync(|| {
         vec![
             Message{user: current_user.clone(), message: "hello1".to_string()},
             Message{user: current_user.clone(), message: "hello2".to_string()},
         ]
+    });
+
+    // 参考： dioxus-hooks-0.5.1/tests/memo.rs
+    use_hook(|| {
+        VEC_SIGNAL.with(|cell| {
+            *cell.borrow_mut() = Some(messages);
+        });
+        std::thread::spawn(move || {
+            std::thread::sleep(std::time::Duration::from_secs(2));
+            messages.push(Message{user: current_user.clone(), message: "helloX".to_string()},);
+        });
     });
 
     rsx! {
@@ -75,18 +93,18 @@ pub fn Client() -> Element {
                         }
                     }
                     div {
-                            class: "chat-input",
-                            input {
-                                r#type: "text",
-                                placeholder: "Type your message...",
-                                value: "{msg_field}",
-                                oninput: move |event| msg_field.set(event.value())
-                            },
-                            button {
-                                r#type: "submit",
-                                "发送"
-                            }
+                        class: "chat-input",
+                        input {
+                            r#type: "text",
+                            placeholder: "Type your message...",
+                            value: "{msg_field}",
+                            oninput: move |event| msg_field.set(event.value())
+                        },
+                        button {
+                            r#type: "submit",
+                            "发送"
                         }
+                    }
                 }
             }
         }
