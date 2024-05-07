@@ -1,11 +1,20 @@
 #![allow(non_snake_case)]
 
-use dioxus::html::time;
+
 use dioxus::prelude::*;
-use tokio::time::{sleep, Duration};
 use std::cell::RefCell;
+use std::env;
+use std::sync::Arc;
+use tokio::net::TcpStream;
+use tokio::sync::{mpsc, Mutex};
+use tokio::sync::mpsc::{Receiver, Sender};
 
 pub static mut USERNAME: String = String::new();
+
+// struct ChannelRS {
+//     receive_rx: Receiver<String>,
+//     send_tx: Sender<String>
+// }
 
 #[derive(PartialEq, Clone)]
 struct Message {
@@ -13,59 +22,44 @@ struct Message {
     message: String
 }
 
-// 寻找参考方法：dioxuslabs官网 Learn -》Dynamic Rendering =》Edit this page =》docsite/docs-src/0.5/en =》reference =》dynamic_rendering.md =》code
-//    找到第77行，发现：{{#include src/doc_examples/rendering_lists.rs:render_list}}，
-//    于是找到当前仓库对应目录，发现参考源代码：https://github.com/DioxusLabs/docsite/blob/main/src/doc_examples/rendering_lists.rs
-#[component]
-fn MessageEntry(msg: Message) -> Element {
+// 聊天客户端窗口
+pub fn Client() -> Element {
+    println!("Client");
+    // 创建发送消息的通道
+    let (send_tx, mut send_rx) = mpsc::channel::<String>(100);
+    // 创建接收消息的通道
+    let (receive_tx, receive_rx) = mpsc::channel::<String>(100);
+
+    spawn(async move {
+        crate::ChatClient::new().run(receive_tx, send_rx).await;
+    });
+
+    let recv = Signal::new(receive_rx);
+    let send = Signal::new(send_tx);
+
     rsx! {
-        div {
-            class: "message",
-            span {
-                    class: "username",
-                    "{msg.user}: "
-                },
-            span {
-                    class: "text",
-                    "{msg.message}"
-            }
-        }
+        ClientForm{receive_rx: recv, send_tx: send}
     }
 }
 
-thread_local! {
-    static VEC_SIGNAL: RefCell<Option<Signal<Vec<Message>, SyncStorage>>> = const { RefCell::new(None) };
-}
-
-// 聊天客户端窗口
-pub fn Client() -> Element {
-    let current_user = unsafe{
-        USERNAME.clone()
-    };
-
+#[component]
+fn ClientForm(mut receive_rx: Signal<Receiver<String>>, mut send_tx: Signal<Sender<String>>) -> Element {
+    let current_user = unsafe{ USERNAME.clone() };
     let mut msg_field = use_signal(String::new);
 
-    // 可以通过闭包内部初始化数据；
-    // 但是使用 下面的方式会导致程序崩溃
-    // let mut messages: Signal<Vec<Message>> = use_signal(Vec::new);
-    //     // messages.write().push(Message{id: 0, user: current_user.clone(), message: "hello1".to_string()});
-    //     // messages.write().push(Message{id: 1,user: current_user.clone(), message: "hello2".to_string()});
+
     let mut messages = use_signal_sync(|| {
         vec![
             Message{user: current_user.clone(), message: "hello1".to_string()},
             Message{user: current_user.clone(), message: "hello2".to_string()},
         ]
     });
-
-    // 参考： dioxus-hooks-0.5.1/tests/memo.rs
-    use_hook(|| {
-        VEC_SIGNAL.with(|cell| {
-            *cell.borrow_mut() = Some(messages);
-        });
-        std::thread::spawn(move || {
-            std::thread::sleep(std::time::Duration::from_secs(2));
-            messages.push(Message{user: current_user.clone(), message: "helloX".to_string()},);
-        });
+    spawn(async move {
+        // tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+        let mut recv = receive_rx.take();
+        while let Some(message) = recv.recv().await {
+            messages.push(Message{user: current_user.clone(), message },);
+        }
     });
 
     rsx! {
@@ -74,9 +68,7 @@ pub fn Client() -> Element {
             link { href:"../../statics/client_style.css", rel:"stylesheet"},
             form {
                 onsubmit: move |event| {
-                    let current_user = unsafe{
-                        USERNAME.clone()
-                    };
+                    let current_user = unsafe{USERNAME.clone()};
 
                     messages
                         .write()
@@ -106,6 +98,29 @@ pub fn Client() -> Element {
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+// 寻找参考方法：dioxuslabs官网 Learn -》Dynamic Rendering =》Edit this page =》docsite/docs-src/0.5/en =》reference =》dynamic_rendering.md =》code
+//    找到第77行，发现：{{#include src/doc_examples/rendering_lists.rs:render_list}}，
+//    于是找到当前仓库对应目录，发现参考源代码：https://github.com/DioxusLabs/docsite/blob/main/src/doc_examples/rendering_lists.rs
+// TODO
+// 1，不同的颜色区分本地发送的数据和接收的数据
+// 2，接收的数据左对齐呈现，自己发送的数据右对齐
+#[component]
+fn MessageEntry(msg: Message) -> Element {
+    rsx! {
+        div {
+            class: "message",
+            span {
+                    class: "username",
+                    "{msg.user}: "
+                },
+            span {
+                    class: "text",
+                    "{msg.message}"
             }
         }
     }

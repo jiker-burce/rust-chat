@@ -18,8 +18,8 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3.1", default-features = false, features = ["fmt", "ansi", "env-filter", "tracing-log"] }
 
 [lib]
-name = "client_lib"
-path = "src/libs/client_lib.rs"
+name = "client_mod"
+path = "src/libs/mod.rs"
 
 [[bin]]
 name = "client"
