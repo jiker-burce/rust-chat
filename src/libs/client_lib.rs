@@ -4,6 +4,7 @@
 use dioxus::prelude::*;
 use std::cell::RefCell;
 use std::env;
+use std::env::current_exe;
 use std::sync::Arc;
 use tokio::net::TcpStream;
 use tokio::sync::{mpsc, Mutex};
@@ -16,7 +17,7 @@ pub static mut USERNAME: String = String::new();
 //     send_tx: Sender<String>
 // }
 
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Debug)]
 struct Message {
     user: String,
     message: String
@@ -40,43 +41,49 @@ pub fn Client() -> Element {
     // 创建发送消息的通道
     let (send_tx, mut send_rx) = mpsc::channel::<String>(100);
     // 创建接收消息的通道
-    let (receive_tx, receive_rx) = mpsc::channel::<String>(100);
+    let (receive_tx, mut receive_rx) = mpsc::channel::<String>(100);
 
     spawn(async move {
         crate::ChatClient::new().run(receive_tx, send_rx).await;
     });
 
-    let ops = ClientFormOptions{
-        receiver: Arc::new(Mutex::new(receive_rx)),
-        send_tx
-    };
+    let current_user = unsafe{ USERNAME.clone() };
+    let mut messages = use_signal_sync(|| {
+        vec![
+            // Message{user: current_user.clone(), message: "hello1".to_string()},
+            // Message{user: current_user.clone(), message: "hello2".to_string()},
+        ]
+    });
+
+    // 接收消息并写入 messages
+    spawn(async move {
+        // tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+        println!("send msg");
+        while let Some(message) = receive_rx.recv().await {
+            messages.push(Message{user: current_user.clone(), message },);
+        }
+    });
+
+    // 判断current_message是否有新数据从页面发送，存在就发送数据给数据流
+    let mut current_message: Signal<Option<Message>> = use_signal(|| None);
+    spawn( async move {
+        loop {
+            if let Some(msg) = current_message.take() {
+                send_tx.send(msg.message).await.expect("窗口发送数据失败");
+            }
+            tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+        }
+    });
 
     rsx! {
-        ClientForm{options: ops}
+        ClientForm{messages: messages, current_message: current_message}
     }
 }
 
 #[component]
-fn ClientForm(options: ClientFormOptions) -> Element {
-    println!("ClientForm");
+fn ClientForm(messages: Signal<Vec<Message>, SyncStorage>, mut current_message: Signal<Option<Message>>) -> Element {
     let current_user = unsafe{ USERNAME.clone() };
     let mut msg_field = use_signal(String::new);
-
-
-    let mut messages = use_signal_sync(|| {
-        vec![
-            Message{user: current_user.clone(), message: "hello1".to_string()},
-            Message{user: current_user.clone(), message: "hello2".to_string()},
-        ]
-    });
-    spawn(async move {
-        // tokio::time::sleep(std::time::Duration::from_secs(5)).await;
-        println!("send msg");
-        let mut recv = options.receiver.lock().await;
-        while let Some(message) = recv.recv().await {
-            messages.push(Message{user: current_user.clone(), message },);
-        }
-    });
 
     rsx! {
         div {
@@ -84,13 +91,15 @@ fn ClientForm(options: ClientFormOptions) -> Element {
             link { href:"../../statics/client_style.css", rel:"stylesheet"},
             form {
                 onsubmit: move |event| {
+                    current_message.set(None);
                     let current_user = unsafe{USERNAME.clone()};
 
-                    messages
-                        .write()
-                        .push(Message {user: current_user, message: msg_field()});
+                    let msg_str = msg_field() + &"\n";
+                    let message = Message {user: current_user, message: msg_str};
+                    messages.write().push(message.clone());
 
                     msg_field.set(String::new());
+                    current_message.set(Some(message));
                 },
                 div {
                     class: "chat-container",
@@ -130,10 +139,10 @@ fn MessageEntry(msg: Message) -> Element {
     rsx! {
         div {
             class: "message",
-            span {
-                    class: "username",
-                    "{msg.user}: "
-                },
+            // span {
+            //         class: "username",
+            //         "{msg.user}: "
+            //     },
             span {
                     class: "text",
                     "{msg.message}"

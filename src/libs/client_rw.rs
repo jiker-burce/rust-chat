@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::io::{self, AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 use tokio::sync::mpsc::{Receiver, Sender};
 use tokio::sync::Mutex;
@@ -18,53 +18,44 @@ impl ChatClient {
     }
 
     pub async fn run(&mut self, receive_tx: Sender<String>, mut send_rx: Receiver<String>) {
-        println!("run");
-
         let addr = "127.0.0.1:6142".to_string();
         let stream = TcpStream::connect(addr).await.unwrap();
-        let stream = Arc::new(Mutex::new(stream));
+        let (read, write) = stream.into_split();
 
+        // 分离读写结构，防止死锁
+        let reader = Arc::new(Mutex::new(read));
+        let writer = Arc::new(Mutex::new(write));
 
-        // TODO 将服务器发送过来的数据写入到聊天窗口
-        // 将服务器发送的数据写入「收取消息通道」，在消息对话框中启动一个线程，随时从此通道获取数据，并渲染UI
         let receive_task = {
-            let mut stream = Arc::clone(&stream);
+            let reader = Arc::clone(&reader);
             let send_to_ui = receive_tx.clone();
             tokio::spawn(async move {
                 let mut buffer = vec![0; 1024];
-                let mut stream = stream.lock().await;
                 loop {
-                    let n = stream.read(&mut buffer).await.expect("读取消息失败");
+                    let n = reader.lock().await.read(&mut buffer).await.expect("读取消息失败");
+                    println!("get r lock");
                     if n == 0 {
-                        // 连接已关闭
-                        break;
+                        break; // 连接已关闭
                     }
                     let message = String::from_utf8_lossy(&buffer[..n]).to_string();
-                    println!("server message: {}", message);
                     send_to_ui.send(message).await.expect("接收消息失败");
                 }
             })
         };
 
-        // TODO 将消息发送给服务器
-        // 启动发送消息任务
         let send_task = {
-            let stream = Arc::clone(&stream);
+            let writer = Arc::clone(&writer);
             tokio::spawn(async move {
                 while let Some(message) = send_rx.recv().await {
-                    let mut stream = stream.lock().await;
-                    stream.write_all(message.as_bytes()).await.expect("Failed to send message to the server");
+                    let mut w = writer.lock().await;
+                    w.write_all((message).as_bytes()).await.expect("Failed to send message to the server");
                 }
             })
         };
+
         match tokio::try_join!(receive_task, send_task) {
-            Ok(val) => {
-                println!("{}", "cool");
-            }
-            Err(err) => {
-                println!("Failed with {}.", err);
-            }
+            Ok(_) => println!("All tasks completed successfully."),
+            Err(e) => println!("A task failed with error: {}", e),
         }
-        println!("client_rw done");
     }
 }
