@@ -1446,6 +1446,7 @@ dependencies = [
  "futures-core",
  "futures-task",
  "futures-util",
+ "num_cpus",
 ]
 
 [[package]]
@@ -3786,6 +3787,7 @@ dependencies = [
  "dioxus-desktop",
  "dioxus-hot-reload",
  "dioxus-signals",
+ "futures",
  "lazy_static",
  "tokio",
  "tokio-stream",
