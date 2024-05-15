@@ -22,6 +22,18 @@ struct Message {
     message: String
 }
 
+#[derive(Clone, Debug)]
+struct ClientFormOptions {
+    receiver: Arc<Mutex<Receiver<String>>>,
+    send_tx: Sender<String>,
+}
+
+impl PartialEq for ClientFormOptions {
+    fn eq(&self, other: &Self) -> bool {
+        Arc::ptr_eq(&self.receiver, &other.receiver) && self.send_tx.same_channel(&other.send_tx)
+    }
+}
+
 // 聊天客户端窗口
 pub fn Client() -> Element {
     println!("Client");
@@ -34,16 +46,19 @@ pub fn Client() -> Element {
         crate::ChatClient::new().run(receive_tx, send_rx).await;
     });
 
-    let recv = Signal::new(receive_rx);
-    let send = Signal::new(send_tx);
+    let ops = ClientFormOptions{
+        receiver: Arc::new(Mutex::new(receive_rx)),
+        send_tx
+    };
 
     rsx! {
-        ClientForm{receive_rx: recv, send_tx: send}
+        ClientForm{options: ops}
     }
 }
 
 #[component]
-fn ClientForm(mut receive_rx: Signal<Receiver<String>>, mut send_tx: Signal<Sender<String>>) -> Element {
+fn ClientForm(options: ClientFormOptions) -> Element {
+    println!("ClientForm");
     let current_user = unsafe{ USERNAME.clone() };
     let mut msg_field = use_signal(String::new);
 
@@ -56,7 +71,8 @@ fn ClientForm(mut receive_rx: Signal<Receiver<String>>, mut send_tx: Signal<Send
     });
     spawn(async move {
         // tokio::time::sleep(std::time::Duration::from_secs(5)).await;
-        let mut recv = receive_rx.take();
+        println!("send msg");
+        let mut recv = options.receiver.lock().await;
         while let Some(message) = recv.recv().await {
             messages.push(Message{user: current_user.clone(), message },);
         }
