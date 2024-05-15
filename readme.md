@@ -1,25 +1,25 @@
-## 桌面聊天软件
-- 效果图
+## Desktop Chat Software
+- Screenshot
   - <img src="client.png" alt="drawing" style="width:200px;height: 300px"/>
 - TODO
   - STEP1
-    - 单个客户端窗口实现点击发送按钮发送消息，当前聊天窗口展示多个用户发送的信息
-    - 开启多个客户端窗口，分别自动命名
-    - 客户端之间发送信息，并展示信息在聊天窗口
-    - 优化聊天展示页面，非自己发送的内容在左侧展示，右侧的展示自己发送的内容
+    - [x] Implement message sending by clicking the send button in a single client window; the current chat window should display messages sent by multiple users. 
+    - [x] Open multiple client windows, each automatically named. 
+    - [ ] Enable message sending between clients and display the messages in the chat windows.
+    - [ ] Optimize the chat display page, with messages from others shown on the left and messages sent by oneself on the right.
   - STEP2
-    - 个性化设置每个客户端，并将设置内容保存至本地
-    - 日志记录
+    - Personalize settings for each client and save these settings locally.
+    - Log recording.
   - STEP3
-    - 增加添加好友功能
-    - 单独聊天模式
-    - 群聊天模式
+    - Add a feature to add friends.
+    - Individual chat mode.
+    - Group chat mode.
   - STEP4
-    - 可发送emoji图像
-    - 可发送单个文件
-    - 可发送文件夹
+    - Enable sending emoji images.
+    - Enable sending individual files.
+    - Enable sending folders.
 - DONE
-  - 初步框架搭建，可正常渲染客户端桌面程序
+  - Preliminary framework established, capable of properly rendering the client desktop application.
 
-## 参考
+## References
 - [example-projects](https://github.com/DioxusLabs/example-projects)
