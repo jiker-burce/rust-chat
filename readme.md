@@ -1,4 +1,10 @@
 ## Desktop Chat Software
+- how to run
+  - tty1: cargo run --bin server
+  - tty2: cargo run --bin client Bruce
+  - tty3: Cargo run --bin client Lucy 
+  - tty4: telnet localhost 6142
+  - tty5: telnet localhost 6142
 - Screenshot
   - <img src="client.png" alt="drawing" style="width:200px;height: 300px"/>
 - TODO
