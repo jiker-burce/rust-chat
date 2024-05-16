@@ -9,16 +9,16 @@
   - <img src="client.png" alt="drawing" style="width:200px;height: 300px"/>
 - TODO
    - STEP2
-    - Personalize settings for each client and save these settings locally.
-    - Log recording.
+     - Personalize settings for each client and save these settings locally.
+     - Log recording.
   - STEP3
-    - Add a feature to add friends.
-    - Individual chat mode.
-    - Group chat mode.
+     - Add a feature to add friends.
+     - Individual chat mode.
+     - Group chat mode.
   - STEP4
-    - Enable sending emoji images.
-    - Enable sending individual files.
-    - Enable sending folders.
+     - Enable sending emoji images.
+     - Enable sending individual files.
+     - Enable sending folders.
 - DONE
   - STEP0
     - [x] Preliminary framework established, capable of properly rendering the client desktop application.
