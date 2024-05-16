@@ -1,7 +1,5 @@
 extern crate client_mod;
 
-use client_mod::client_lib::USERNAME;
-
 use dioxus::desktop::{Config, WindowBuilder};
 use dioxus::prelude::*;
 use dioxus_desktop::tao;
@@ -15,13 +13,6 @@ fn main(){
     // 目前虽然可以调通live reload，但是 无法达到修改css文件后自动重新渲染样式，还是需要手动重新rebuild
     // 已经提出issue：https://github.com/DioxusLabs/dioxus/issues/2379
     // hot_reload_init!(dioxus_hot_reload::Config::new().with_paths(&["statics"]));//.with_rebuild_command("cargo run --bin client Bruce"));
-
-    let username = std::env::args().nth(1).unwrap_or_else(|| "unknown".to_string());
-    unsafe {
-        USERNAME = username.clone();
-    }
-
-    let win_title = format!("{}的聊天窗口!", username);
 
     // 无参数启动
     // launch_desktop(
@@ -37,7 +28,7 @@ fn main(){
             WindowBuilder::new()
                 .with_resizable(false)
                 .with_inner_size(tao::dpi::LogicalSize::new(340.0, 450.0))
-                .with_title(win_title)
+                .with_title("chat window")
         )
     )
     .launch(client_mod::client_lib::Client);

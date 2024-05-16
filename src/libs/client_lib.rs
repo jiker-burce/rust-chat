@@ -6,33 +6,16 @@ use std::cell::RefCell;
 use std::env;
 use std::env::current_exe;
 use std::sync::Arc;
+use dioxus_desktop::use_window;
+use tokio::io::AsyncReadExt;
 use tokio::net::TcpStream;
 use tokio::sync::{mpsc, Mutex};
 use tokio::sync::mpsc::{Receiver, Sender};
-
-pub static mut USERNAME: String = String::new();
-
-// struct ChannelRS {
-//     receive_rx: Receiver<String>,
-//     send_tx: Sender<String>
-// }
 
 #[derive(PartialEq, Clone, Debug)]
 struct Message {
     user: String,
     message: String
-}
-
-#[derive(Clone, Debug)]
-struct ClientFormOptions {
-    receiver: Arc<Mutex<Receiver<String>>>,
-    send_tx: Sender<String>,
-}
-
-impl PartialEq for ClientFormOptions {
-    fn eq(&self, other: &Self) -> bool {
-        Arc::ptr_eq(&self.receiver, &other.receiver) && self.send_tx.same_channel(&other.send_tx)
-    }
 }
 
 // 聊天客户端窗口
@@ -47,12 +30,9 @@ pub fn Client() -> Element {
         crate::ChatClient::new().run(receive_tx, send_rx).await;
     });
 
-    let current_user = unsafe{ USERNAME.clone() };
+    let current_user = use_signal(|| String::new());
     let mut messages = use_signal_sync(|| {
-        vec![
-            // Message{user: current_user.clone(), message: "hello1".to_string()},
-            // Message{user: current_user.clone(), message: "hello2".to_string()},
-        ]
+        vec![]
     });
 
     // 接收消息并写入 messages
@@ -60,7 +40,7 @@ pub fn Client() -> Element {
         // tokio::time::sleep(std::time::Duration::from_secs(5)).await;
         println!("send msg");
         while let Some(message) = receive_rx.recv().await {
-            messages.push(Message{user: current_user.clone(), message },);
+            messages.push(Message{user: current_user.to_string(), message },);
         }
     });
 
@@ -76,13 +56,20 @@ pub fn Client() -> Element {
     });
 
     rsx! {
-        ClientForm{messages: messages, current_message: current_message}
+        ClientForm{
+            messages: messages,
+            current_message: current_message,
+            current_user: current_user
+        }
     }
 }
 
 #[component]
-fn ClientForm(messages: Signal<Vec<Message>, SyncStorage>, mut current_message: Signal<Option<Message>>) -> Element {
-    let current_user = unsafe{ USERNAME.clone() };
+fn ClientForm(
+    messages: Signal<Vec<Message>, SyncStorage>,
+    mut current_message: Signal<Option<Message>>,
+    current_user: Signal<String>
+) -> Element {
     let mut msg_field = use_signal(String::new);
 
     rsx! {
@@ -92,10 +79,15 @@ fn ClientForm(messages: Signal<Vec<Message>, SyncStorage>, mut current_message: 
             form {
                 onsubmit: move |event| {
                     current_message.set(None);
-                    let current_user = unsafe{USERNAME.clone()};
 
-                    let msg_str = msg_field() + &"\n";
-                    let message = Message {user: current_user, message: msg_str};
+                    let msg = msg_field();
+                    let msg_str = msg.clone() + &"\n";
+                    let window_handle = use_window();
+                    if window_handle.title().eq("chat window") {
+                        current_user.set(msg);
+                        window_handle.set_title(&( current_user.to_string() + &"'s chat window"));
+                    }
+                    let message = Message {user: current_user.to_string(), message: msg_str};
                     messages.write().push(message.clone());
 
                     msg_field.set(String::new());

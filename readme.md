@@ -11,7 +11,7 @@
   - STEP1
     - [x] Implement message sending by clicking the send button in a single client window; the current chat window should display messages sent by multiple users. 
     - [x] Open multiple client windows, each automatically named. 
-    - [ ] Enable message sending between clients and display the messages in the chat windows.
+    - [x] Enable message sending between clients and display the messages in the chat windows.
     - [ ] Optimize the chat display page, with messages from others shown on the left and messages sent by oneself on the right.
   - STEP2
     - Personalize settings for each client and save these settings locally.
