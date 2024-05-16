@@ -19,11 +19,33 @@
     padding: 10px;
     height: 300px;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    clear: both;
 }
 
 /* Style for individual chat messages */
 .message {
+    display: inline-block;
+    max-width: 80%;
     margin-bottom: 10px;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+    padding: 5px;
+    border-radius: 10px;
+}
+
+/* Local message styles */
+.message.local {
+    background-color: #a9e87a;
+    margin-left: auto;
+    text-align: right;
+}
+
+/* Remote message styles */
+.message.remote {
+    background-color: white;
+    margin-right: auto;
+    text-align: left;
 }
 
 /* Style for message username */

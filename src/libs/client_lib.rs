@@ -15,7 +15,8 @@ use tokio::sync::mpsc::{Receiver, Sender};
 #[derive(PartialEq, Clone, Debug)]
 struct Message {
     user: String,
-    message: String
+    message: String,
+    is_local: bool
 }
 
 // 聊天客户端窗口
@@ -40,7 +41,7 @@ pub fn Client() -> Element {
         // tokio::time::sleep(std::time::Duration::from_secs(5)).await;
         println!("send msg");
         while let Some(message) = receive_rx.recv().await {
-            messages.push(Message{user: current_user.to_string(), message },);
+            messages.push(Message{user: current_user.to_string(), message, is_local: false },);
         }
     });
 
@@ -87,7 +88,7 @@ fn ClientForm(
                         current_user.set(msg);
                         window_handle.set_title(&( current_user.to_string() + &"'s chat window"));
                     }
-                    let message = Message {user: current_user.to_string(), message: msg_str};
+                    let message = Message {user: current_user.to_string(), message: msg_str, is_local: true};
                     messages.write().push(message.clone());
 
                     msg_field.set(String::new());
@@ -128,16 +129,18 @@ fn ClientForm(
 // 2，接收的数据左对齐呈现，自己发送的数据右对齐
 #[component]
 fn MessageEntry(msg: Message) -> Element {
+    let msg_style = if msg.is_local {
+        "message local"
+    } else {
+        "message remote"
+    };
+
     rsx! {
         div {
-            class: "message",
-            // span {
-            //         class: "username",
-            //         "{msg.user}: "
-            //     },
+            class: "{msg_style}",
             span {
-                    class: "text",
-                    "{msg.message}"
+                class: "text",
+                "{msg.message}"
             }
         }
     }
